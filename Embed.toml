@@ -1,0 +1,16 @@
+[default.general]
+chip = "esp32s3"
+log_level = "INFO"
+
+[default.reset]
+enabled = true
+halt_afterwards = true
+
+[default.flashing]
+enabled = true
+
+[default.rtt]
+enabled = true
+
+[default.gdb]
+enabled = true

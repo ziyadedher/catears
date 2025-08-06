@@ -1,0 +1,5 @@
+{
+  "servos": { "left": 250, "right": 250 },
+  "lights": { "left": "Off", "right": "Off", "brightness": 255 },
+  "speakers": { "mode": "Silent", "volume": 128 }
+}

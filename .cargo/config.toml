@@ -1,0 +1,14 @@
+[target.xtensa-esp32s3-none-elf]
+runner = "probe-rs run --protocol jtag --chip=esp32s3 --preverify --always-print-stacktrace"
+
+[env]
+DEFMT_LOG = "info,catears=trace"
+PROBE_RS_CHIP = "esp32s3"
+PROBE_RS_PROTOCOL = "jtag"
+
+[build]
+rustflags = ["-C", "link-arg=-nostartfiles"]
+target = "xtensa-esp32s3-none-elf"
+
+[unstable]
+build-std = ["alloc", "core"]

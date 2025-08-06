@@ -1,0 +1,30 @@
+[
+  {
+    "label": "Launch probe-rs debugging",
+    "adapter": "probe-rs",
+    "request": "launch",
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "server": "127.0.0.1:50000",
+    "coreConfigs": [
+      {
+        "coreIndex": 0,
+        "catchReset": true,
+        "catchHardfault": true,
+        "rttEnabled": true,
+        "rttChannelFormats": [
+          {
+            "channelNumber": 0,
+            "dataFormat": "String",
+            "showTimestamps": true,
+            "showLocation": true
+          }
+        ],
+        "programBinary": "target/xtensa-esp32s3-none-elf/release/catears"
+      }
+    ],
+    "connectUnderReset": true,
+    "wireProtocol": "Jtag",
+    "chip": "esp32s3",
+    "consoleLogLevel": "Debug"
+  }
+]
