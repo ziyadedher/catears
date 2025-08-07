@@ -66,11 +66,23 @@ export async function POST(request: NextRequest) {
       },
     });
     
+    // Log successful upload
+    const username = request.headers.get('x-username') || 'unknown';
+    const timestamp = new Date().toISOString();
+    console.log(`[UPLOAD] ${JSON.stringify({
+      timestamp,
+      username,
+      bucket: bucketName,
+      file: fileName,
+      size: stateJson.length,
+      ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
+    })}`);
+    
     // Return success response
     return NextResponse.json({
       success: true,
       message: 'State uploaded successfully',
-      timestamp: new Date().toISOString(),
+      timestamp,
       bucket: bucketName,
       file: fileName,
     });
