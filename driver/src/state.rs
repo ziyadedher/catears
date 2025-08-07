@@ -40,16 +40,46 @@ impl State {
     }
 }
 
+/// Servo operation mode for each ear.
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub enum ServoMode {
+    /// Static position mode - servo holds a fixed position.
+    Static(u8), // 0-255, center at 125
+    /// Sweep mode - servo continuously moves between two positions.
+    Sweep {
+        /// Starting position (0-255).
+        min: u8,
+        /// Ending position (0-255).
+        max: u8,
+        /// Time in milliseconds for one complete sweep (min to max).
+        speed_ms: u32,
+    },
+    /// Twitch mode - random small movements for lifelike effect.
+    Twitch {
+        /// Center position to twitch around (0-255).
+        center: u8,
+        /// Maximum deviation from center (0-50).
+        amplitude: u8,
+        /// Average time between twitches in milliseconds.
+        interval_ms: u32,
+    },
+}
+
+impl Default for ServoMode {
+    fn default() -> Self {
+        Self::Static(125) // Center position
+    }
+}
+
 /// Servo motor control state for ear positioning.
 ///
-/// Controls the position of left and right servo motors that actuate the cat ear movements. Values range from 0-255,
-/// where 125 represents the neutral/center position.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize)]
+/// Controls the position and movement patterns of left and right servo motors that actuate the cat ear movements.
+#[derive(Debug, Clone, Copy, PartialEq, Default, Serialize, Deserialize)]
 pub struct Servos {
-    /// Left ear servo position (0-255, center at 125).
-    pub left: u8,
-    /// Right ear servo position (0-255, center at 125).
-    pub right: u8,
+    /// Left ear servo mode.
+    pub left: ServoMode,
+    /// Right ear servo mode.
+    pub right: ServoMode,
 }
 
 impl Servos {
@@ -64,8 +94,8 @@ impl Servos {
     #[must_use]
     pub const fn default_const() -> Self {
         Self {
-            left: 125,
-            right: 125,
+            left: ServoMode::Static(125),
+            right: ServoMode::Static(125),
         }
     }
 }

@@ -10,9 +10,14 @@ export interface State {
   speakers: Speakers;
 }
 
+export type ServoMode = 
+  | { Static: number } // 0-255, center at 125
+  | { Sweep: { min: number; max: number; speed_ms: number } }
+  | { Twitch: { center: number; amplitude: number; interval_ms: number } };
+
 export interface Servos {
-  left: number;  // 0-255, center at 125
-  right: number; // 0-255, center at 125
+  left: ServoMode;
+  right: ServoMode;
 }
 
 export interface Lights {
@@ -122,8 +127,8 @@ export type LightPatternName = keyof typeof LIGHT_PATTERNS;
 // Helper to create default state
 export const createDefaultState = (): State => ({
   servos: {
-    left: 125,
-    right: 125,
+    left: { Static: 125 },
+    right: { Static: 125 },
   },
   lights: {
     left: { Pulse: {

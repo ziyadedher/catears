@@ -494,14 +494,88 @@ async fn control_servos(
         esp_hal::mcpwm::operator::PwmPin<'static, esp_hal::peripherals::MCPWM0<'static>, 0, false>,
     >,
 ) -> ! {
+    use embassy_time::Instant;
+    use crate::state::ServoMode;
+    
+    let mut left_start = Instant::now();
+    let mut right_start = Instant::now();
+    
     loop {
-        let positions = state.read().await.servos;
+        let servos = state.read().await.servos;
+        
+        // Handle left servo
+        let left_position = match servos.left {
+            ServoMode::Static(pos) => {
+                left_start = Instant::now(); // Reset timer for mode changes
+                pos
+            },
+            ServoMode::Sweep { min, max, speed_ms } => {
+                let elapsed = left_start.elapsed().as_millis() as u32;
+                let cycle_time = speed_ms * 2; // Full cycle is min->max->min
+                let phase = (elapsed % cycle_time) as f32 / cycle_time as f32;
+                
+                if phase < 0.5 {
+                    // Sweeping from min to max
+                    let t = phase * 2.0;
+                    (min as f32 + (max - min) as f32 * t) as u8
+                } else {
+                    // Sweeping from max to min
+                    let t = (phase - 0.5) * 2.0;
+                    (max as f32 - (max - min) as f32 * t) as u8
+                }
+            },
+            ServoMode::Twitch { center, amplitude, interval_ms } => {
+                let elapsed = left_start.elapsed().as_millis() as u32;
+                if elapsed > interval_ms {
+                    left_start = Instant::now();
+                    // Simple random-like twitch using elapsed time as pseudo-random
+                    let offset = ((elapsed * 7919) % (amplitude as u32 * 2)) as i16 - amplitude as i16;
+                    (center as i16 + offset).clamp(0, 255) as u8
+                } else {
+                    center
+                }
+            },
+        };
+        
+        // Handle right servo  
+        let right_position = match servos.right {
+            ServoMode::Static(pos) => {
+                right_start = Instant::now(); // Reset timer for mode changes
+                pos
+            },
+            ServoMode::Sweep { min, max, speed_ms } => {
+                let elapsed = right_start.elapsed().as_millis() as u32;
+                let cycle_time = speed_ms * 2; // Full cycle is min->max->min
+                let phase = (elapsed % cycle_time) as f32 / cycle_time as f32;
+                
+                if phase < 0.5 {
+                    // Sweeping from min to max
+                    let t = phase * 2.0;
+                    (min as f32 + (max - min) as f32 * t) as u8
+                } else {
+                    // Sweeping from max to min
+                    let t = (phase - 0.5) * 2.0;
+                    (max as f32 - (max - min) as f32 * t) as u8
+                }
+            },
+            ServoMode::Twitch { center, amplitude, interval_ms } => {
+                let elapsed = right_start.elapsed().as_millis() as u32;
+                if elapsed > interval_ms {
+                    right_start = Instant::now();
+                    // Simple random-like twitch using elapsed time as pseudo-random
+                    let offset = ((elapsed * 13337) % (amplitude as u32 * 2)) as i16 - amplitude as i16;
+                    (center as i16 + offset).clamp(0, 255) as u8
+                } else {
+                    center
+                }
+            },
+        };
 
         servo_left
-            .set_rotation(positions.left)
+            .set_rotation(left_position)
             .expect("unable to set servo_left rotation");
         servo_right
-            .set_rotation(positions.right)
+            .set_rotation(right_position)
             .expect("unable to set servo_right rotation");
 
         Timer::after(embassy_time::Duration::from_millis(10)).await;

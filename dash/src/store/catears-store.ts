@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { State, EarSelection, createDefaultState, LightMode, AudioMode } from '@/types/catears';
+import { State, EarSelection, createDefaultState, LightMode, AudioMode, ServoMode } from '@/types/catears';
 
 interface CatEarsStore {
   state: State;
@@ -7,11 +7,11 @@ interface CatEarsStore {
   
   // Backup states for independent ear control
   leftBackup: {
-    servo: number;
+    servo: ServoMode;
     light: LightMode;
   } | null;
   rightBackup: {
-    servo: number;
+    servo: ServoMode;
     light: LightMode;
   } | null;
   
@@ -22,9 +22,9 @@ interface CatEarsStore {
   syncToBothEars: () => void;
   
   // Servo controls
-  setServoPosition: (position: number) => void;
-  setLeftServo: (position: number) => void;
-  setRightServo: (position: number) => void;
+  setServoMode: (mode: ServoMode) => void;
+  setLeftServoMode: (mode: ServoMode) => void;
+  setRightServoMode: (mode: ServoMode) => void;
   
   // Light controls
   setLightMode: (mode: LightMode) => void;
@@ -97,15 +97,15 @@ export const useCatEarsStore = create<CatEarsStore>((set, get) => ({
   },
   
   // Servo controls
-  setServoPosition: (position) => set((state) => {
+  setServoMode: (mode) => set((state) => {
     const { earSelection } = state;
     const newServos = { ...state.state.servos };
     
     if (earSelection === 'left' || earSelection === 'both') {
-      newServos.left = position;
+      newServos.left = mode;
     }
     if (earSelection === 'right' || earSelection === 'both') {
-      newServos.right = position;
+      newServos.right = mode;
     }
     
     return {
@@ -116,22 +116,22 @@ export const useCatEarsStore = create<CatEarsStore>((set, get) => ({
     };
   }),
   
-  setLeftServo: (position) => set((state) => ({
+  setLeftServoMode: (mode) => set((state) => ({
     state: {
       ...state.state,
       servos: {
         ...state.state.servos,
-        left: position,
+        left: mode,
       },
     },
   })),
   
-  setRightServo: (position) => set((state) => ({
+  setRightServoMode: (mode) => set((state) => ({
     state: {
       ...state.state,
       servos: {
         ...state.state.servos,
-        right: position,
+        right: mode,
       },
     },
   })),
